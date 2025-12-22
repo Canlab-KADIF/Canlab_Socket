@@ -80,6 +80,80 @@ int kill_rosbag() {
     return 1;
 }
 
+// image_extractor 실행 함수
+int image_extractor(const char *arg1, const char *arg2, const char *arg3, const char *arg4, const char *arg5, const char *arg6, const char *arg7) {
+    char cmd_buffer[BUFSIZE];
+    char combined_arg1[BUFSIZE];
+    char combined_arg4[BUFSIZE];
+    
+    if (arg1 != NULL && arg7 != NULL) {
+        const char *filename = strrchr(arg1, '/'); 
+        if (filename) {
+            filename++;  
+        } else {
+            filename = arg1;  
+        }
+
+        snprintf(combined_arg1, sizeof(combined_arg1), "%s%s", arg7, filename);
+        arg1 = combined_arg1;
+    }
+
+    if (arg4 != NULL && arg7 != NULL) {
+        const char *filename = strrchr(arg4, '/'); 
+        if (filename) {
+            filename++;  
+        } else {
+            filename = arg4;  
+        }
+
+        snprintf(combined_arg4, sizeof(combined_arg4), "%s%s", arg7, filename);
+        arg4 = combined_arg4;  
+    }
+    
+    snprintf(cmd_buffer, sizeof(cmd_buffer), "%s/image_extractor.sh", ROS_PATH);
+
+    const char *args[] = {arg1, arg2, arg3, arg4, arg5, arg6, arg7};
+    for (int i = 0; i < 7; i++) {
+        if (args[i] != NULL) {
+            strncat(cmd_buffer, " ", sizeof(cmd_buffer) - strlen(cmd_buffer) - 1);
+            strncat(cmd_buffer, args[i], sizeof(cmd_buffer) - strlen(cmd_buffer) - 1);
+        }
+    }
+    strncat(cmd_buffer, " &", sizeof(cmd_buffer) - strlen(cmd_buffer) - 1);
+
+    if (execute_command(cmd_buffer) == -1) {
+        log_message("Error running image_extractor.sh", NULL);
+        return -1;
+    } else {
+        log_message("Successfully ran image_extractor.sh", NULL);
+    }
+
+    return 1;
+}
+
+// gps_extractor 실행 함수
+int gps_extractor(const char *arg1) {
+    char cmd_buffer[BUFSIZE];
+
+    snprintf(cmd_buffer, sizeof(cmd_buffer), "%s/gps_extractor.sh", ROS_PATH);
+    
+    if (arg1 != NULL) {
+        strncat(cmd_buffer, " ", sizeof(cmd_buffer) - strlen(cmd_buffer) - 1);
+        strncat(cmd_buffer, arg1, sizeof(cmd_buffer) - strlen(cmd_buffer) - 1);
+    }
+    
+    strncat(cmd_buffer, " &", sizeof(cmd_buffer) - strlen(cmd_buffer) - 1);
+
+    if (execute_command(cmd_buffer) == -1) {
+        log_message("Error running gps_extractor.sh", NULL);
+        return -1;
+    } else {
+        log_message("Successfully ran gps_extractor.sh", NULL);
+    }
+
+    return 1;
+}
+
 // 로그 저장 함수
 void log_message(const char *message, const char *var) {
     char log[BUFSIZE];

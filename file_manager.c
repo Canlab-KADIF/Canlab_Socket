@@ -254,6 +254,9 @@ void* move_bag_files(void *arg) {
 		// log header - record date
 		strncpy(record_date, strrchr(first_bag, '/') + 1, 15);
 
+		// travel_path - latitude, longitude
+		ret = gps_extractor(T.MakeDirectoryBuf);
+
 		// scene_context - dynamic_elements
 		strcpy(dynamic_elements, route_name);
 
@@ -347,7 +350,47 @@ void* move_bag_files(void *arg) {
 			 intersections,
 			 roundabouts,
 			 T.MakeDirectoryBuf);
-                        
+
+		duration = 0.0;
+		// gps.yaml 삭제
+		snprintf(cmd_buffer, sizeof(cmd_buffer), "rm %sgps.yaml", T.MakeDirectoryBuf);
+                if (execute_command(cmd_buffer) == -1) {
+                    log_message("Error deleting gps.yaml", NULL);
+                } else {
+                    log_message("Successfully deleted gps.yaml", NULL);
+                }
+
+		// 트리거 시점 앞 15초 뒤 5초 영상 저장
+                if (backup_count < 2) {
+                    ret = image_extractor( first_bag, "15" , "/clpe/cam_0/compressed", first_bag, "5" , "/clpe/cam_0/compressed",T.MakeDirectoryBuf);
+                } else if (backup_count == 2) {
+                    ret = image_extractor( first_bag, "15" , "/clpe/cam_0/compressed", second_bag, "5" , "/clpe/cam_0/compressed",T.MakeDirectoryBuf);
+                } else {
+                    ret = image_extractor( second_bag, "15" , "/clpe/cam_0/compressed", third_bag, "5" , "/clpe/cam_0/compressed",T.MakeDirectoryBuf);
+                }
+
+		// change name video clip, thumbnail
+		while (ret) {
+		    snprintf(cmd_buffer, sizeof(cmd_buffer), "mv %sthumbnail.jpg %s%s 2>/dev/null", T.MakeDirectoryBuf, T.MakeDirectoryBuf, thumbnail_name);
+		    if (execute_command(cmd_buffer) == -1) {
+                        log_message("Error changing thumbnail name", NULL);
+                    } else {
+                        log_message("Successfully changed thumbnail name: ", thumbnail_name);
+                        break;
+                    }
+                    sleep(1);
+		}
+		while (ret) {
+		    snprintf(cmd_buffer, sizeof(cmd_buffer), "mv %svideo_clip.mp4 %s%s 2>/dev/null", T.MakeDirectoryBuf, T.MakeDirectoryBuf, clip_name);
+		    if (execute_command(cmd_buffer) == -1) {
+                        log_message("Error changing video clip name", NULL);
+                    } else {
+                        log_message("Successfully changed video clip name: ", clip_name);
+                        break;
+                    }
+                    sleep(3);
+		}
+
                         restart_rosbag(); 
             	}            
 	    }

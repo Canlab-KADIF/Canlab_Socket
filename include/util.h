@@ -31,8 +31,12 @@
 #define TYPE_RAW "raw" // Datatype-raw
 #define TYPE_META "meta" // Datatype-meta
 #define TYPE_ROUTE "route" // Datatype-route
+#define TYPE_THUMBNAIL "thumbnail" // Datatype-thumbnail
+#define TYPE_CLIP "video_clip" // Datatype-video clip
 #define EXT_RAW ".db3" // ext-db3
 #define EXT_JSON ".json" // ext-json
+#define EXT_JPG ".jpg" // ext-jpg
+#define EXT_MP4 ".mp4" // ext-mp4
 
 
 void log_message(const char *message, const char *var);
@@ -42,6 +46,8 @@ int execute_command(const char *cmd);
 int run_ros();
 int run_rosbag();
 int kill_rosbag();
+int image_extractor(const char *arg1, const char *arg2, const char *arg3, const char *arg4, const char *arg5, const char *arg6, const char *arg7);
+int gps_extractor(const char *arg1);
 int waitForSync();
 int extract_number_from_filename(const char *filename);
 int compare_files_by_number(const void *a, const void *b);
