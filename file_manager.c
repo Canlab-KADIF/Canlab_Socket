@@ -148,6 +148,41 @@ void* move_bag_files(void *arg) {
     char cmd_buffer[BUFSIZE];
     int target_index = 0, start_index = 0, end_index = 0, ret = 0;
 
+    int c_socket = -1;
+    pthread_t threads = 0;
+    
+    char abnormal_discerned_timestamp[MAX_STR];
+    char scenario_description[MAX_STR];
+    char dynamic_elements[MAX_STR];
+    char scenery[MAX_STR];
+    char image[MAX_STR];
+    char travel_path[MAX_STR];
+    char video[MAX_STR];
+    char triggered_timestamp[MAX_STR];
+    char record_date[MAX_STR];
+    char special_vehicles[MAX_STR];
+    char special_structures[MAX_STR];
+
+    int abnormal_cause = 0;
+    int scenario_causative_object = 0;
+    int scenario_id = 0;
+    int date_time = 0;
+    int driving_mode = 0;
+    int illuminance = 0;
+    int rainfall = 0;
+    int cloudness = 0;
+    int snowfall = 0;
+    int wind = 0;
+    int triggered_cause = 0;
+    double duration = 0.0;
+
+    int pedestrian_density = 0;
+    int traffic_density = 0;
+    int zones = 0;
+    int road_types = 0;
+    int intersections = 0;
+    bool roundabouts = false;
+    
     T.Count = 1;
     T.Trigger = 0;
 
@@ -206,6 +241,106 @@ void* move_bag_files(void *arg) {
 		        }
 		        
                         //upload_bag_files(); // metadata 업로드
+
+		// triggered cause - triggered timestamp
+		strncpy(triggered_timestamp, strrchr(bag_path, '/') + 1, 15);
+
+		// log header - record date
+		strncpy(record_date, strrchr(first_bag, '/') + 1, 15);
+
+		// scene_context - dynamic_elements
+		strcpy(dynamic_elements, route_name);
+
+		// scene_context - scenery
+		strcpy(scenery, route_name);
+
+		// screen - image
+		strcpy(image, thumbnail_name);
+
+		// screen - travel_path
+		strcpy(travel_path, route_name);
+
+		// screen - video
+		strcpy(video, clip_name);
+
+		// gui socket
+		c_socket = connect_to_server(ADS_IPADDR, GUI_PORT);
+		if (c_socket == -1) {
+		    cleanup_thread(threads, 0, c_socket);
+		    display_banner("DASHBOARD END");
+		    return -1;
+		}
+
+		receive_data(c_socket,
+			 &abnormal_cause,
+			 abnormal_discerned_timestamp,
+			 &scenario_causative_object,
+			 scenario_description,
+			 &scenario_id,
+			 &date_time,
+			 &driving_mode,
+			 &illuminance,
+			 &rainfall,
+			 &cloudness,
+			 &snowfall,
+			 &wind,
+			 &triggered_cause);
+			 
+		char chat_data[] = "metadata 수신 확인";
+		if (write(c_socket, chat_data, strlen(chat_data)) < 0) {
+			perror("Write failed");
+		}
+		usleep(500000);
+
+		receive_route(c_socket,
+			 &pedestrian_density,
+			 &traffic_density,
+			 special_vehicles,
+			 &zones,
+			 &road_types,
+			 &intersections,
+			 &roundabouts,
+			 special_structures);
+			 
+		char route_data[] = "routedata 수신 확인";
+		if (write(c_socket, route_data, strlen(route_data)) < 0) {
+			perror("Write failed");
+		}
+
+		close(c_socket);
+
+		save_to_json(meta_name,
+			 abnormal_cause,
+			 abnormal_discerned_timestamp,
+			 scenario_causative_object,
+			 scenario_description,
+			 scenario_id,
+			 date_time,
+			 driving_mode,
+			 illuminance,
+			 rainfall,
+			 cloudness,
+			 snowfall,
+			 wind,
+			 triggered_cause,
+			 triggered_timestamp,
+			 duration,
+			 record_date,
+			 dynamic_elements,
+			 scenery,
+			 image,
+			 travel_path,
+			 video,
+			 T.MakeDirectoryBuf);
+
+		route_to_json(route_name,
+			 pedestrian_density,
+			 traffic_density,
+			 zones,
+			 road_types,
+			 intersections,
+			 roundabouts,
+			 T.MakeDirectoryBuf);
                         
                         restart_rosbag(); 
             	}            

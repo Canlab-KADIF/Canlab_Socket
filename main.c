@@ -30,7 +30,7 @@ int main() {
 
     display_banner("DASHBOARD START");
 
-    c_socket = connect_to_server(IPADDR, PORT);
+    c_socket = connect_to_server(ADS_IPADDR, ADS_PORT);
     if (c_socket == -1) {
         cleanup_thread(threads, thread_count, c_socket);
         display_banner("DASHBOARD END");

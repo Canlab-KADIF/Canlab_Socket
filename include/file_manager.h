@@ -3,7 +3,8 @@
 
 #include "util.h"
 
-#define path "/home/canlab/BAG" // 경로
+#define path "/home/canlab/BAG" // 로깅데이터 경로
+#define ROS_PATH "/home/canlab/Canlab_ROS2" // ROS2 패키지 경로
 #define MAX_FILES 70  // 최대 파일 수
 
 int create_directory(char* dest, size_t size);

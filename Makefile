@@ -16,7 +16,7 @@ all: $(TARGET)
 
 # Linking object files to create the executable
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ -lcurl -lpthread
+	$(CC) $(CFLAGS) -o $@ $^ -lcurl -lpthread -lcjson
 
 # Compiling .c files to .o files
 %.o: %.c

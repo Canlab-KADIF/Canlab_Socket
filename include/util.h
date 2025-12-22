@@ -18,8 +18,21 @@
 #include "file_manager.h"
 #include "network.h"
 #include <curl/curl.h>
+#include <cjson/cJSON.h>
 
-#define VERSION "r1.0.0"
+
+#define VERSION "r1.1.0"
+#define SUDO_PASSWORD "1"
+#define FTP_ADDR "13.124.86.161/uploads/" // FTP 주소
+#define FTP_ID "aqUfxwVB4A" // FTP 로그인 ID
+#define FTP_PW "Q1EqIBIqlOtbXSQS" // FTP 로그인 PW
+#define SESSIONID "CANL21" // SessionID
+#define TYPE_RAW "raw" // Datatype-raw
+#define TYPE_META "meta" // Datatype-meta
+#define TYPE_ROUTE "route" // Datatype-route
+#define EXT_RAW ".db3" // ext-db3
+#define EXT_JSON ".json" // ext-json
+
 
 void log_message(const char *message, const char *var);
 
@@ -30,5 +43,37 @@ int kill_rosbag();
 int extract_number_from_filename(const char *filename);
 int compare_files_by_number(const void *a, const void *b);
 
+void save_to_json(const char *filename,
+                  int abnormal_cause,
+                  const char *abnormal_discerned_timestamp,
+                  int scenario_causative_object,
+                  const char *scenario_description,
+                  int scenario_id,
+                  int date_time,
+                  int driving_mode,
+                  int illuminance,
+                  int rainfall,
+                  int cloudness,
+                  int snowfall,
+                  int wind,
+                  int triggered_cause,
+                  const char *triggered_timestamp,
+                  double duration,
+                  const char *record_date,
+                  const char *dynamic_elements,
+                  const char *scenery,
+                  const char *image,
+                  const char *travel_path,
+                  const char *video,
+                  char *MakeDirectoryBuf);
+
+void route_to_json(const char *filename,
+                  int pedestrian_density,
+                  int traffic_density,
+                  int zones,
+                  int road_types,
+                  int intersections,
+                  bool roundabouts,
+                  char *MakeDirectoryBuf);
 #endif
 
