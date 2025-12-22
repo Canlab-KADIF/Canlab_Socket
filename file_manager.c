@@ -18,12 +18,12 @@ int create_directory(char* dest, size_t size) {
              t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, 
              t->tm_hour, t->tm_min, t->tm_sec);
 
-    if (snprintf(dest, size, "%s_TRG_%s/", path, timestamp) >= size) { // dest배열에 TRG폴더이름 저장
+    if (snprintf(dest, size, "%s_TRG_%s/", path, timestamp) >= size) {
         log_message("Error: Path is too long.", NULL);
         return -1;
     }
 
-    if (mkdir(dest, S_IFDIR | S_IRWXU | S_IRWXG | S_IXOTH | S_IROTH) == -1) { // mkdir로 TRG폴더 생성
+    if (mkdir(dest, S_IFDIR | S_IRWXU | S_IRWXG | S_IXOTH | S_IROTH) == -1) {
         if (errno == EEXIST) {
 		log_message("Error: Directory already exists.", NULL);
 		perror("mkdir failed");
@@ -36,7 +36,7 @@ int create_directory(char* dest, size_t size) {
 }
 
 int find_files_in_directory(const char *dir_path, const char *ext, char **files, int *count) {
-    struct dirent *entry; // 디렉토리 내 항목들의 이름(d_name), 타입(d_type) 등 정보를 저장하는 구조체
+    struct dirent *entry;
     DIR *dir = opendir(dir_path);
     if (dir == NULL) {
         log_message("Failed to open directory", NULL);
@@ -45,12 +45,11 @@ int find_files_in_directory(const char *dir_path, const char *ext, char **files,
     }
 
     while ((entry = readdir(dir)) != NULL) {
-        // 상위 폴더 건너뛰기 string compare, d_name == "." 이면 0을 리턴
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
         }
 
-        char full_path[BUFSIZE]; // full_path=/home/canlab/BAG/d_name
+        char full_path[BUFSIZE];
         snprintf(full_path, sizeof(full_path), "%s/%s", dir_path, entry->d_name);
 
         if (entry->d_type == DT_DIR) {
@@ -58,8 +57,8 @@ int find_files_in_directory(const char *dir_path, const char *ext, char **files,
             find_files_in_directory(full_path, ext, files, count);
         } else {
             // type이 파일일 경우
-            if (ext == NULL || strstr(entry->d_name, ext) != NULL) { // d_name에서 ext와 일치하는 스트링이 있는지 확인
-                files[*count] = strdup(full_path); // string duplicate, files의 인덱스에 파일명 저장
+            if (ext == NULL || strstr(entry->d_name, ext) != NULL) {
+                files[*count] = strdup(full_path);
                 (*count)++;
                 //log_message("Found file: ", NULL);
                 //log_message(full_path); 
@@ -129,9 +128,16 @@ void restart_rosbag() {
 
     sleep(1);
 
-    ret = run_rosbag();
+    ret = run_ros();
     if (ret == -1) {
         log_message("Ros Run Failed", NULL);
+        display_banner("DASHBOARD END");
+        running = 0;
+    }
+    
+    ret = run_rosbag();
+    if (ret == -1) {
+        log_message("Rosbag Run Failed", NULL);
         display_banner("DASHBOARD END");
         running = 0;
     }

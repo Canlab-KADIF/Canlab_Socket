@@ -11,7 +11,7 @@ int create_directory(char* dest, size_t size);
 int find_files_in_directory(const char *dir_path, const char *ext, char **files, int *count);
 
 void restart_rosbag();
-void set_target_indices(int *start_index, int *end_index, int target);
+//void set_target_indices(int *start_index, int *end_index, int target);
 void* check_file_count(void* arg);
 void* move_bag_files(void* arg);
 

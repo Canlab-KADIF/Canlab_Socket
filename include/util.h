@@ -1,6 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,8 +39,10 @@ void log_message(const char *message, const char *var);
 
 int upload_bag_files();
 int execute_command(const char *cmd);
+int run_ros();
 int run_rosbag();
 int kill_rosbag();
+int waitForSync();
 int extract_number_from_filename(const char *filename);
 int compare_files_by_number(const void *a, const void *b);
 

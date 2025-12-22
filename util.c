@@ -30,9 +30,23 @@ int execute_command(const char *cmd) {
 }
 
 // ROS 실행 함수
+int run_ros(){
+    char cmd_buffer[BUFSIZE];
+    snprintf(cmd_buffer, sizeof(cmd_buffer), "%s/run.sh &", ROS_PATH);
+    if (execute_command(cmd_buffer) == -1) {
+        log_message("Error run run.sh", NULL);
+        return -1;
+    } else {
+        log_message("Successfully run run.sh", NULL);
+    }
+
+    return 1;
+}
+
+// ROSBAG 실행 함수
 int run_rosbag(){
     char cmd_buffer[BUFSIZE];
-    snprintf(cmd_buffer, sizeof(cmd_buffer), "/home/canlab/rosbag_record.sh &");
+    snprintf(cmd_buffer, sizeof(cmd_buffer), "%s/rosbag_record.sh &", ROS_PATH);
     if (execute_command(cmd_buffer) == -1) {
         log_message("Error run rosbag_record.sh", NULL);
         return -1;
@@ -70,7 +84,7 @@ int kill_rosbag() {
 void log_message(const char *message, const char *var) {
     char log[BUFSIZE];
     
-    FILE *log_file = fopen("/home/canlab/log.txt", "a");
+    FILE *log_file = fopen("log.txt", "a");
     if (log_file == NULL) {
         perror("Failed to open log file");
         return;
@@ -88,6 +102,42 @@ void log_message(const char *message, const char *var) {
             t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, 
             t->tm_hour, t->tm_min, t->tm_sec, log);
     fclose(log_file);
+}
+
+// 동기화 함수
+int waitForSync() {
+    FILE *fp;
+    char buffer[1024];
+    char command[256];
+    int syncSuccess = 0;
+    
+    snprintf(command, sizeof(command), "echo %s | sudo -S ./sync_time.sh client %s", SUDO_PASSWORD, ADS_IPADDR);
+
+    fp = popen(command, "r");
+    if (fp == NULL) {
+        perror("popen 실행 실패");
+        return -1;
+    }
+
+    // 출력된 내용을 한 줄씩 읽으며 성공 메시지가 있는지 확인
+    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+        if (strstr(buffer, "시간 동기화가 완료되었습니다.") != NULL) {
+            printf("Chrony 동기화 완료.\n");
+    	    time_t curr_time = time(NULL);
+	    if (curr_time == ((time_t) -1)) {
+		log_message("time() Fail", NULL);
+	        return -1;
+	    }
+       	    printf("현재 시스템 시간: %s", ctime(&curr_time));
+        }else if(strstr(buffer, "최대 시도 횟수 내에 시간 동기화가 완료되지 않았습니다.") != NULL) {
+            printf("Chrony 동기화 실패.\n");
+            return -1;
+        }
+    }
+
+    pclose(fp);
+    
+    return 0;
 }
 
 // 숫자 추출 함수
