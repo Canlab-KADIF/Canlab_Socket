@@ -68,7 +68,14 @@ int run_rosbag(){
 // ROS 종료 함수
 int kill_rosbag() {
     char cmd_buffer[BUFSIZE];
-    snprintf(cmd_buffer, sizeof(cmd_buffer), "killall rosbag_record.sh");
+    snprintf(cmd_buffer, sizeof(cmd_buffer), "%s/kill_demo.sh", ROS_PATH);
+    if (execute_command(cmd_buffer) == -1) {
+        log_message("Error run kill_demo.sh", NULL);
+        return -1;
+    } else {
+        log_message("Successfully run kill_demo.sh", NULL);
+    }
+    /*snprintf(cmd_buffer, sizeof(cmd_buffer), "killall rosbag_record.sh");
     if (execute_command(cmd_buffer) == -1) {
         log_message("Error kill rosbag_record.sh", NULL);
         return -1;
@@ -82,7 +89,7 @@ int kill_rosbag() {
         return -1;
     } else {
         log_message("Successfully kill ros2", NULL);
-    }
+    }*/
 
     return 1;
 }
