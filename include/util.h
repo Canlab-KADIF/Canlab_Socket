@@ -40,6 +40,7 @@
 
 
 void log_message(const char *message, const char *var);
+void backup_name(char *target, char* dest, const char* name);
 
 int upload_bag_files();
 int execute_command(const char *cmd);

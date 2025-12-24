@@ -234,6 +234,13 @@ int compare_files_by_number(const void *a, const void *b) {
     return num1 - num2;  // 숫자 기준 오름차순 정렬
 }
 
+// 백업파일 이름 저장
+void backup_name(char *target, char* dest, const char* name) {
+    char temp[128];
+    snprintf(temp, sizeof(temp), "%s%s", dest, name);
+    snprintf(target, sizeof(temp), "%s", temp);
+}
+
 // 서버에 .db3 업로드 하는 함수
 int upload_bag_files(){
 	return 0;

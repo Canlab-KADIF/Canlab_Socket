@@ -3,7 +3,13 @@
 extern TRIGGER_CLIENT T;
 
 extern volatile int running;  
-
+extern char trigger_time[BUFSIZE];
+extern char trigger_time_30ago[BUFSIZE];
+extern char trigger_time_60ago[BUFSIZE];
+extern char meta_name[BUFSIZE];
+extern char route_name[BUFSIZE];
+extern char thumbnail_name[BUFSIZE];
+extern char clip_name[BUFSIZE];
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 char *files[MAX_FILES];
@@ -191,6 +197,7 @@ void* move_bag_files(void *arg) {
     
     T.Count = 1;
     T.Trigger = 0;
+    int backup_count = 0;
 
     while (running) {
         if (T.Trigger == 1) {
@@ -205,27 +212,62 @@ void* move_bag_files(void *arg) {
             
             if (file_count < 2) {
                 start_index = file_count - 1;
-                end_index = file_count;
+                end_index = file_count - 1;
                 log_message("File Count < 2. Selecting target file", NULL);
                 T.Count = 0;
+                backup_count = file_count;
             }
 
             if (T.Count == 1) {
                 target_index = file_count - 1;
-                start_index = target_index - 1;
-                end_index = target_index + 1;
+                if (file_count == 2) {
+                    start_index = target_index - 1;
+                } else {
+                    start_index = target_index - 2;
+                }
+                end_index = target_index;
                 log_message("Selecting target file", NULL);
                 T.Count = 0;
+                backup_count = file_count;
             }
 
 	    // 3개의 파일이 생성 된 후 파일 이동
-            if (file_count >= target_index + 3) {
+            if (file_count >= target_index + 2) {
                 for (int i = start_index; i <= end_index; i++) {
+                    // backup bagfile
                     snprintf(cmd_buffer, sizeof(cmd_buffer), "cp %s %s", files[i], T.MakeDirectoryBuf);
                     if (execute_command(cmd_buffer) == -1) {
                         log_message("Error copying file.", NULL);
                     } else {
                         log_message("Successfully copied file: ", files[i]);
+                    }
+
+                    // log header - duration
+                    snprintf(cmd_buffer, sizeof(cmd_buffer), "ros2 bag info %s | grep Duration: > /tmp/tmp_duration.txt", bag_path);
+                    if (execute_command(cmd_buffer) == -1) {
+                        log_message("Error executing bag info for duration", NULL);
+                    } else {
+                        FILE *fp = fopen("/tmp/tmp_duration.txt", "r");
+                        if (fp != NULL) {
+                            char duration_tmp1[32];
+                            char duration_tmp2[32];
+                            
+                            if (fgets(duration_tmp1, sizeof(duration_tmp1), fp) != NULL) {
+                                if (sscanf(duration_tmp1, "Duration: %[0-9.]", duration_tmp2) != 1) {
+                                    log_message("Error extracting duration", NULL);
+                                    return -1;
+                                } else {
+                                    duration += atof(duration_tmp2);
+                                }
+                            } else {
+                                log_message("Error fgets", NULL);
+                                return -1;
+                            }
+                        } else {
+                            log_message("Error fopen tmp_duration.txt", NULL);
+                            return -1;
+                        }
+                        fclose(fp);
                     }
                     //upload_bag_files(); // BAG 업로드
                 }
@@ -391,7 +433,20 @@ void* move_bag_files(void *arg) {
                     sleep(3);
 		}
 
-                        restart_rosbag(); 
+                // upload bagfile
+                /*if (backup_count < 2) {
+                    upload_bag_files(first_bag);
+                } else if (backup_count == 2) {
+                    upload_bag_files(first_bag);
+                    upload_bag_files(second_bag);
+                } else {
+                    upload_bag_files(first_bag);
+                    upload_bag_files(second_bag);
+                    upload_bag_files(third_bag);
+                }
+                upload_files(T.MakeDirectoryBuf);*/
+
+                restart_rosbag(); 
             	}            
 	    }
         }
