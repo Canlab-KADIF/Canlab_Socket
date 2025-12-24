@@ -184,7 +184,7 @@ void log_message(const char *message, const char *var) {
             t->tm_hour, t->tm_min, t->tm_sec, log);
     fclose(log_file);
 }
-
+#if 0
 // 동기화 함수
 int waitForSync() {
     FILE *fp;
@@ -220,7 +220,7 @@ int waitForSync() {
     
     return 0;
 }
-
+#endif
 // 숫자 추출 함수
 int extract_number_from_filename(const char *filename) {
     const char *p = filename;

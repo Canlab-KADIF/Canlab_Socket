@@ -48,7 +48,7 @@ int run_rosbag();
 int kill_rosbag();
 int image_extractor(const char *arg1, const char *arg2, const char *arg3, const char *arg4, const char *arg5, const char *arg6, const char *arg7);
 int gps_extractor(const char *arg1);
-int waitForSync();
+//int waitForSync();
 int extract_number_from_filename(const char *filename);
 int compare_files_by_number(const void *a, const void *b);
 int upload_bag_files(const char *file);

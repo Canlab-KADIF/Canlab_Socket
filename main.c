@@ -55,7 +55,7 @@ int main() {
 
     logfile_check(); // log.txt 생성 확인
 
-    if( waitForSync() == 0){ // 동기화 10번 시도       	    
+    //if( waitForSync() == 0){ // 동기화 10번 시도       	    
 	    c_socket = connect_to_server(ADS_IPADDR, ADS_PORT);
 	    if (c_socket == -1) {
 		cleanup_thread(threads, thread_count, c_socket);
@@ -119,10 +119,10 @@ int main() {
 	    }
 
 	    cleanup_thread(threads, thread_count, c_socket);
-    }else {
-        log_message("Chrony Fail", NULL);
-        return -1;
-    }
+    //}else {
+    //    log_message("Chrony Fail", NULL);
+    //    return -1;
+    //}
     
     return 0;
 }
