@@ -297,6 +297,106 @@ int upload_files(char* dest) {
     return 1;
 }
 
+// metadata.yaml .db3 파일명 변경
+void change_bag(char *MakeDirectoryBuf, const char *metadata_file, const char *old_txt, const char *target_txt) {
+    char temp_path[BUFSIZE];
+    char buffer[BUFSIZE];
+
+    snprintf(temp_path, sizeof(temp_path), "%stemp.yaml", MakeDirectoryBuf);
+    FILE *src = fopen(metadata_file, "r");
+    FILE *temp = fopen(temp_path, "w");
+
+    if (!src) {
+        log_message("Error fopen metadata.yaml", NULL);
+        fclose(src);
+        return;
+    }
+    if (!temp) {
+        log_message("Error fopen temp.yaml", NULL);
+        fclose(temp);
+        return;
+    }
+
+    while (fgets(buffer, sizeof(buffer), src)) {
+        char *pos;
+        while ((pos = strstr(buffer, old_txt)) != NULL) {
+            // 앞부분 출력
+            *pos = '\0';
+            fprintf(temp, "%s", buffer);
+
+            // bag파일 이름 출력
+            fprintf(temp, "%s", target_txt);
+
+            // 버퍼 다음 위치로 이동
+            memmove(buffer, pos + strlen(old_txt), strlen(pos + strlen(old_txt)) + 1);
+        }
+        // 남은 부분 출력
+        fprintf(temp, "%s", buffer);
+    }
+    fclose(src);
+    fclose(temp);
+
+    remove(metadata_file);
+    rename(temp_path, metadata_file);
+}
+
+// metadata.yaml 트리거 아닌 .db3 파일명 제외
+void exclude_bag(char *MakeDirectoryBuf, const char *metadata_file) {
+    //d
+    char temp_path[BUFSIZE];
+    char buffer[BUFSIZE];
+
+    snprintf(temp_path, sizeof(temp_path), "%stemp.yaml", MakeDirectoryBuf);
+    FILE *src = fopen(metadata_file, "r");
+    FILE *temp = fopen(temp_path, "w");
+
+    if (!src) {
+        log_message("Error fopen metadata.yaml", NULL);
+        fclose(src);
+        return;
+    }
+    if (!temp) {
+        log_message("Error fopen temp.yaml", NULL);
+        fclose(temp);
+        return;
+    }
+    bool relative = false;
+    bool files = false;
+    bool skip_files = false;
+
+    while (fgets(buffer, sizeof(buffer), src)) {
+        if (strstr(buffer, "relative_file_paths:")) {
+            relative = true;
+            files = false;
+            fprintf(temp, "%s", buffer);
+        } else if (strstr(buffer, "files:")) {
+            files = true;
+            relative = false;
+            fprintf(temp, "%s", buffer);
+        } else if (relative) {
+            if (!strstr(buffer, "BAG_")) {
+                fprintf(temp, "%s", buffer);
+            }
+        } else if (files) {
+            if (strstr(buffer, "path: BAG_")) {
+                skip_files = true;
+            } else if (strstr(buffer, "path: ") && skip_files) {
+                skip_files = false;
+            }
+
+            if (!skip_files) {
+                fprintf(temp, "%s", buffer);
+            }
+        } else {
+            fprintf(temp, "%s", buffer);
+        }
+    }
+    fclose(src);
+    fclose(temp);
+
+    remove(metadata_file);
+    rename(temp_path, metadata_file);
+}
 
 // JSON 파일 저장 함수
 void save_to_json(const char *filename,

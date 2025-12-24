@@ -53,6 +53,8 @@ int extract_number_from_filename(const char *filename);
 int compare_files_by_number(const void *a, const void *b);
 int upload_bag_files(const char *file);
 int upload_files(char* dest);
+void change_bag(char *MakeDirectoryBuf, const char *metadata_file, const char *old_txt, const char *target_txt);
+void exclude_bag(char *MakeDirectoryBuf, const char *metadata_file);
 
 void save_to_json(const char *filename,
                   int abnormal_cause,

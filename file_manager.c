@@ -298,18 +298,29 @@ void* move_bag_files(void *arg) {
 	            display_banner("DASHBOARD END");
                     running = 0; // 프로그램 종료     
 	        }else{
-		        while (ret) {
-		            snprintf(cmd_buffer, sizeof(cmd_buffer), "cp %s/metadata.yaml %s 2>/dev/null", path, T.MakeDirectoryBuf);
-		            if (execute_command(cmd_buffer) == 0) {
-		                log_message("Successfully copied file metadata.yaml ", NULL);
-		                break;
-		            } else {
-		                log_message("Error copying file metadata.yaml", NULL);
-		            }
-		            sleep(1);
-		        }
-		        
-                        //upload_bag_files(); // metadata 업로드
+	        // metadata.yaml
+	        while (ret) {
+	            snprintf(cmd_buffer, sizeof(cmd_buffer), "cp %s/metadata.yaml %s 2>/dev/null", path, T.MakeDirectoryBuf);
+	            if (execute_command(cmd_buffer) == -1) {
+	                log_message("Error copying metadata.yaml.", NULL);
+	            } else {
+	                log_message("Successfully copied metadata.yaml", NULL);
+	                break;
+	            }
+	            sleep(1);
+	        }
+	        // metadata.yaml change filename
+	        char metadata_path[BUFSIZE];
+	        snprintf(metadata_path, sizeof(metadata_path), "%smetadata.yaml", T.MakeDirectoryBuf);
+	        for (int i = start_index; i <= end_index; i++) {
+	            char *old_txt = strrchr(files[i + 1], '/') + 1;
+	            char *target_txt = trigger_times[end_index - i];
+	            
+	            change_bag(T.MakeDirectoryBuf, metadata_path, old_txt, target_txt);
+	        }
+	        sleep(1);
+	        // metadata.yaml exclude untriggered files
+	        exclude_bag(T.MakeDirectoryBuf, metadata_path);
 
 		// triggered cause - triggered timestamp
 		strncpy(triggered_timestamp, strrchr(bag_path, '/') + 1, 15);
