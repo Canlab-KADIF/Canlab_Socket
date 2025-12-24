@@ -19,6 +19,7 @@ void handle_trigger(const char* message) {
             extern TRIGGER_CLIENT T;
             T.Trigger = 1;
             log_message("Receive Trigger :", triggers[i]);
+            trigger_topic_publisher();
             break;
         }
     }

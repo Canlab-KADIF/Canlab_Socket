@@ -168,6 +168,26 @@ int gps_extractor(const char *arg1) {
     return 1;
 }
 
+// trigger_topic_pub 실행 함수
+int trigger_topic_publisher() {
+    char cmd_buffer[BUFSIZE];
+
+    snprintf(cmd_buffer, sizeof(cmd_buffer), "%s/trigger_topic_pub.sh", ROS_PATH);
+    
+    strncat(cmd_buffer, " ", sizeof(cmd_buffer) - strlen(cmd_buffer) - 1);
+    
+    strncat(cmd_buffer, " &", sizeof(cmd_buffer) - strlen(cmd_buffer) - 1);
+
+    if (execute_command(cmd_buffer) == -1) {
+        log_message("Error running trigger_topic_pub.sh", NULL);
+        return -1;
+    } else {
+        log_message("Successfully ran trigger_topic_pub.sh", NULL);
+    }
+
+    return 1;
+}
+
 // 로그 저장 함수
 void log_message(const char *message, const char *var) {
     char log[BUFSIZE];
