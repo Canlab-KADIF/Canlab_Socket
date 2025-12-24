@@ -1,4 +1,11 @@
 #include "util.h"
+extern char trigger_time[BUFSIZE];
+extern char meta_name[BUFSIZE];
+extern char route_name[BUFSIZE];
+extern char thumbnail_name[BUFSIZE];
+extern char clip_name[BUFSIZE];
+extern char vehicle_array[5];
+extern char structure_array[6];
 
 // 시스템 명령어 실행 함수
 int execute_command(const char *cmd) {
@@ -242,9 +249,54 @@ void backup_name(char *target, char* dest, const char* name) {
 }
 
 // 서버에 .db3 업로드 하는 함수
-int upload_bag_files(){
-	return 0;
+int upload_bag_files(const char *file) {
+    char cmd_buffer[BUFSIZE];
+    snprintf(cmd_buffer, sizeof(cmd_buffer), "curl -T %s ftp://%s:%s@%s", file, FTP_ID, FTP_PW, FTP_ADDR);
+    if (execute_command(cmd_buffer) == -1) {
+        log_message("Error uploading .db3 file:", file);
+        return -1;
+    } else {
+        log_message("Successfully upload .db3 file:", file);
+    }
+
+    return 1;
 }
+
+// 서버에 업로드 하는 함수
+int upload_files(char* dest) {
+    char cmd_buffer[BUFSIZE];
+    snprintf(cmd_buffer, sizeof(cmd_buffer), "curl -T %s%s ftp://%s:%s@%s", dest, meta_name, FTP_ID, FTP_PW, FTP_ADDR);
+    if (execute_command(cmd_buffer) == -1) {
+        log_message("Error uploading meta.json file", NULL);
+        return -1;
+    } else {
+        log_message("Successfully upload meta.json file", NULL);
+    }
+    snprintf(cmd_buffer, sizeof(cmd_buffer), "curl -T %s%s ftp://%s:%s@%s", dest, route_name, FTP_ID, FTP_PW, FTP_ADDR);
+    if (execute_command(cmd_buffer) == -1) {
+        log_message("Error uploading route.json file", NULL);
+        return -1;
+    } else {
+        log_message("Successfully upload route.json file", NULL);
+    }
+    snprintf(cmd_buffer, sizeof(cmd_buffer), "curl -T %s%s ftp://%s:%s@%s", dest, thumbnail_name, FTP_ID, FTP_PW, FTP_ADDR);
+    if (execute_command(cmd_buffer) == -1) {
+        log_message("Error uploading thumbnail.jpg file", NULL);
+        return -1;
+    } else {
+        log_message("Successfully upload thumbnail.jpg file", NULL);
+    }
+    snprintf(cmd_buffer, sizeof(cmd_buffer), "curl -T %s%s ftp://%s:%s@%s", dest, clip_name, FTP_ID, FTP_PW, FTP_ADDR);
+    if (execute_command(cmd_buffer) == -1) {
+        log_message("Error uploading video_clip.mp4 file", NULL);
+        return -1;
+    } else {
+        log_message("Successfully upload video_clip.mp4 file", NULL);
+    }
+
+    return 1;
+}
+
 
 // JSON 파일 저장 함수
 void save_to_json(const char *filename,

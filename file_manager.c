@@ -233,6 +233,10 @@ void* move_bag_files(void *arg) {
 
 	    // 3개의 파일이 생성 된 후 파일 이동
             if (file_count >= target_index + 2) {
+                char bag_path[128];
+                char first_bag[128], second_bag[128], third_bag[128];
+                const char *trigger_times[] = {trigger_time, trigger_time_30ago, trigger_time_60ago};
+                
                 for (int i = start_index; i <= end_index; i++) {
                     // backup bagfile
                     snprintf(cmd_buffer, sizeof(cmd_buffer), "cp %s %s", files[i], T.MakeDirectoryBuf);
@@ -240,6 +244,24 @@ void* move_bag_files(void *arg) {
                         log_message("Error copying file.", NULL);
                     } else {
                         log_message("Successfully copied file: ", files[i]);
+                    }
+
+                    // change bagfile name
+                    snprintf(cmd_buffer, sizeof(cmd_buffer), "mv %s%s %s%s", T.MakeDirectoryBuf, strrchr(files[i], '/') + 1, T.MakeDirectoryBuf, trigger_times[end_index - i]);
+                    if (execute_command(cmd_buffer) == -1) {
+                        log_message("Error changing file name.", NULL);
+                    } else {
+                        log_message("Successfully changed file name: ", trigger_times[end_index - i]);
+                    }
+
+                    // bagfile index
+                    backup_name(bag_path, T.MakeDirectoryBuf, trigger_times[end_index - i]);
+                    if ((i - start_index) < 1) {
+                        strcpy(first_bag, bag_path);
+                    } else if ((i - start_index) == 1) {
+                        strcpy(second_bag, bag_path);
+                    } else {
+                        strcpy(third_bag, bag_path);
                     }
 
                     // log header - duration
@@ -269,7 +291,6 @@ void* move_bag_files(void *arg) {
                         }
                         fclose(fp);
                     }
-                    //upload_bag_files(); // BAG 업로드
                 }
 
                 ret = kill_rosbag(); //ROS 종료

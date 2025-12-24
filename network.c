@@ -2,6 +2,15 @@
 
 extern TRIGGER_CLIENT T;
 extern volatile int running;  
+char trigger_time[BUFSIZE];
+char trigger_time_30ago[BUFSIZE];
+char trigger_time_60ago[BUFSIZE];
+char meta_name[BUFSIZE];
+char route_name[BUFSIZE];
+char thumbnail_name[BUFSIZE];
+char clip_name[BUFSIZE];
+char vehicle_array[5];
+char structure_array[6];
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER; 
 
@@ -54,6 +63,57 @@ void* receive_chat(void* arg) {
         handle_trigger(chat_data); 
         pthread_mutex_unlock(&lock);
         
+        time_t now = time(NULL);
+        struct tm *t = localtime(&now);
+        // 트리거시점 파일 이름
+        char time_tmp[BUFSIZE];
+        snprintf(time_tmp, sizeof(time_tmp), "%04d%02d%02d_%02d%02d%02d", 
+            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, 
+            t->tm_hour, t->tm_min, t->tm_sec);
+
+        snprintf(trigger_time, sizeof(trigger_time), "%s_%s_%s%s", time_tmp, SESSIONID, TYPE_RAW, EXT_RAW);
+        snprintf(meta_name, sizeof(meta_name), "%s_%s_%s%s", time_tmp, SESSIONID, TYPE_META, EXT_JSON);
+        snprintf(route_name, sizeof(route_name), "%s_%s_%s%s", time_tmp, SESSIONID, TYPE_ROUTE, EXT_JSON);
+        snprintf(thumbnail_name, sizeof(thumbnail_name), "%s_%s_%s%s", time_tmp, SESSIONID, TYPE_THUMBNAIL, EXT_JPG);
+        snprintf(clip_name, sizeof(clip_name), "%s_%s_%s%s", time_tmp, SESSIONID, TYPE_CLIP, EXT_MP4);
+
+        // 트리거시점 30초전 파일 이름
+        if (t->tm_sec < 30) {
+            if (t->tm_min < 1) {
+                t->tm_hour = t->tm_hour - 1;
+                t->tm_min = t->tm_min + 59;
+                t->tm_sec = t->tm_sec + 30;
+            }
+            else {
+                t->tm_min = t->tm_min - 1;
+                t->tm_sec = t->tm_sec + 30;
+            }
+        }
+        else {
+            t->tm_sec = t->tm_sec - 30;
+        }
+        snprintf(trigger_time_30ago, sizeof(trigger_time_30ago), "%04d%02d%02d_%02d%02d%02d_%s_%s%s", 
+            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, 
+            t->tm_hour, t->tm_min, t->tm_sec, SESSIONID, TYPE_RAW, EXT_RAW);
+        // 트리거시점 60초전 파일 이름
+        if (t->tm_sec < 30) {
+            if (t->tm_min < 1) {
+                t->tm_hour = t->tm_hour - 1;
+                t->tm_min = t->tm_min + 59;
+                t->tm_sec = t->tm_sec + 30;
+            }
+            else {
+                t->tm_min = t->tm_min - 1;
+                t->tm_sec = t->tm_sec + 30;
+            }
+        }
+        else {
+            t->tm_sec = t->tm_sec - 30;
+        }
+        snprintf(trigger_time_60ago, sizeof(trigger_time_60ago), "%04d%02d%02d_%02d%02d%02d_%s_%s%s", 
+            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, 
+            t->tm_hour, t->tm_min, t->tm_sec, SESSIONID, TYPE_RAW, EXT_RAW);
+
         usleep(100000); 
     }
 

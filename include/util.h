@@ -42,7 +42,6 @@
 void log_message(const char *message, const char *var);
 void backup_name(char *target, char* dest, const char* name);
 
-int upload_bag_files();
 int execute_command(const char *cmd);
 int run_ros();
 int run_rosbag();
@@ -52,6 +51,8 @@ int gps_extractor(const char *arg1);
 int waitForSync();
 int extract_number_from_filename(const char *filename);
 int compare_files_by_number(const void *a, const void *b);
+int upload_bag_files(const char *file);
+int upload_files(char* dest);
 
 void save_to_json(const char *filename,
                   int abnormal_cause,
